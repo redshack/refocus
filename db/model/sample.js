@@ -79,6 +79,11 @@ module.exports = function sample(seq, dataTypes) {
         },
       },
     },
+    upsertedAt: {
+      type: dataTypes.DATE,
+      defaultValue: dataTypes.NOW,
+      allowNull: false,
+    },
   }, {
     classMethods: {
       getSampleAssociations() {
@@ -255,10 +260,40 @@ module.exports = function sample(seq, dataTypes) {
       }, // upsertByName
 
       bulkUpsertByName(toUpsert) {
-        const promises = toUpsert.map((s) =>
-          this.upsertByName(s, true)
-        );
-        return seq.Promise.all(promises);
+        const toUpdate = [];
+        const toCreate = [];
+        const promises = [];
+        for (let i = 0; i < toUpsert.length; i++) {
+          const uSample = toUpsert[i];
+          promises.push(
+            Sample.findOne({
+              where: {
+                name: {
+                  $iLike: uSample.name,
+                },
+                isDeleted: NO,
+              },
+            })
+            .then((rSample) => {
+              if (rSample) {
+                toUpdate.push(uSample);
+              } else {
+                toCreate.push(uSample);
+              }
+            }));
+        }
+
+        return seq.Promise.all(promises)
+        .then(() => {
+          debugger;
+          Sample.update(toUpdate);
+        })
+        .then(() => Sample.bulkCreate(toCreate));
+
+        // const promises = toUpsert.map((s) =>
+        //   this.upsertByName(s, true)
+        // );
+        // return seq.Promise.all(promises);
       }, // bulkUpsertByName
 
       /**
