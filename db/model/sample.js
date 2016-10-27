@@ -255,6 +255,7 @@ module.exports = function sample(seq, dataTypes) {
       }, // upsertByName
 
       bulkUpsertByName(toUpsert) {
+        console.time("bulkUpsertStart");
         const toUpdate = [];
         const toCreate = [];
         const promises = [];
@@ -318,6 +319,7 @@ module.exports = function sample(seq, dataTypes) {
         .catch((err) => {
           throw err;
         });
+        console.timeEnd("bulkUpsertStart");
       }, // bulkUpsertByName
 
       /**
