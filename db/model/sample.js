@@ -79,11 +79,6 @@ module.exports = function sample(seq, dataTypes) {
         },
       },
     },
-    upsertedAt: {
-      type: dataTypes.DATE,
-      defaultValue: dataTypes.NOW,
-      allowNull: false,
-    },
   }, {
     classMethods: {
       getSampleAssociations() {
@@ -275,25 +270,54 @@ module.exports = function sample(seq, dataTypes) {
               },
             })
             .then((rSample) => {
+              const retSample = {};
               if (rSample) {
-                toUpdate.push(uSample);
-              } else {
-                toCreate.push(uSample);
+                retSample.obj = uSample;
+                retSample.isUpdate = true;
+                return retSample;
               }
-            }));
+
+              return u.getSubjectAndAspectBySampleName(seq, uSample.name, true)
+              .then((returnedObj) => {
+                uSample.subjectId = returnedObj.subject.id;
+                uSample.aspectId = returnedObj.aspect.id;
+                retSample.obj = uSample;
+                retSample.isUpdate = false;
+                return retSample;
+              });
+            })
+            .catch((err) => {
+              throw err;
+            })
+          );
         }
 
         return seq.Promise.all(promises)
-        .then(() => {
-          debugger;
-          Sample.update(toUpdate);
-        })
-        .then(() => Sample.bulkCreate(toCreate));
+        .then((sampleObjs) => {
+          // debugger;
+          for (let i = 0; i < sampleObjs.length; i++) {
+            const sampleObj = sampleObjs[i];
+            if (sampleObj.isUpdate) {
+              // debugger;
+              toUpdate.push(sampleObj.obj);
+            } else {
+              toCreate.push(sampleObj.obj);
+            }
+          }
 
-        // const promises = toUpsert.map((s) =>
-        //   this.upsertByName(s, true)
-        // );
-        // return seq.Promise.all(promises);
+          if (toCreate.length > 0) {
+            Sample.bulkCreate(toCreate);
+          }
+
+          if (toUpdate.length > 0) {
+            for (let i = 0; i < toUpdate.length; i++) {
+              Sample.update(toUpdate[i], { where: { name: toUpdate[i].name } });
+            }
+          }
+        })
+        .catch((err) => {
+          throw err;
+        });
       }, // bulkUpsertByName
 
       /**
