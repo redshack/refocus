@@ -255,7 +255,6 @@ module.exports = function sample(seq, dataTypes) {
       }, // upsertByName
 
       bulkUpsertByName(toUpsert) {
-        console.time("bulkUpsertStart");
         const toUpdate = [];
         const toCreate = [];
         const promises = [];
@@ -288,21 +287,24 @@ module.exports = function sample(seq, dataTypes) {
               });
             })
             .catch((err) => {
-              throw err;
+              console.log('Cannot find sample: ' + uSample.name);
+              seq.Promise.resolve();
             })
           );
         }
 
         return seq.Promise.all(promises)
         .then((sampleObjs) => {
-          // debugger;
+          // console.log(sampleObjs);
           for (let i = 0; i < sampleObjs.length; i++) {
             const sampleObj = sampleObjs[i];
-            if (sampleObj.isUpdate) {
-              // debugger;
-              toUpdate.push(sampleObj.obj);
-            } else {
-              toCreate.push(sampleObj.obj);
+            if (sampleObj) {
+              if (sampleObj.isUpdate) {
+                // debugger;
+                toUpdate.push(sampleObj.obj);
+              } else {
+                toCreate.push(sampleObj.obj);
+              }
             }
           }
 
@@ -319,7 +321,6 @@ module.exports = function sample(seq, dataTypes) {
         .catch((err) => {
           throw err;
         });
-        console.timeEnd("bulkUpsertStart");
       }, // bulkUpsertByName
 
       /**
