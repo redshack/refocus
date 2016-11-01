@@ -307,12 +307,12 @@ module.exports = function sample(seq, dataTypes) {
           }
 
           if (toCreate.length > 0) {
-            Sample.bulkCreate(toCreate);
+            Sample.bulkCreate(toCreate, { individualHooks: true });
           }
 
           if (toUpdate.length > 0) {
             for (let i = 0; i < toUpdate.length; i++) {
-              Sample.update(toUpdate[i], { where: { name: toUpdate[i].name } });
+              Sample.update(toUpdate[i], { where: { name: toUpdate[i].name }, individualHooks: true });
             }
           }
         })

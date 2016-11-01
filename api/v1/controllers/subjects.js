@@ -98,6 +98,7 @@ module.exports = {
    * @param {Function} next - The next middleware function in the stack
    */
   getSubjectHierarchy(req, res, next) {
+    console.time("getSubjectHierarchy");
     const params = req.swagger.params;
     const depth = Number(params.depth.value);
 
@@ -109,6 +110,7 @@ module.exports = {
       }
 
       retval = helper.modifyAPIResponse(retval, params);
+      console.timeEnd("getSubjectHierarchy");
       res.status(httpStatus.OK).json(retval);
     })
     .catch((err) => u.handleError(next, err, helper.modelName));

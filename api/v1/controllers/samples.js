@@ -150,7 +150,12 @@ module.exports = {
       };
     */
 
-    helper.model.bulkUpsertByName(req.swagger.params.queryBody.value);
+    console.time("bulkUpsertSample");
+    helper.model.bulkUpsertByName(req.swagger.params.queryBody.value)
+    .then(() => {
+      console.timeEnd("bulkUpsertSample");
+    });
+
     if (helper.loggingEnabled) {
       logAPI(req, helper.modelName);
     }
