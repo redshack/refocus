@@ -7,7 +7,7 @@
  */
 
 /**
- * tests/api/v1/token/createToken.js
+ * tests/api/v1/token/createTokenByCredentials.js.js
  */
 
 const expect = require('chai').expect;
@@ -16,9 +16,10 @@ const api = supertest(require('../../../../index').app);
 const constants = require('../../../../api/v1/constants');
 const u = require('./utils');
 const registerPath = '/v1/register';
-const tokenPath = '/v1/token';
+const tokenPath = '/v1/token/create_by_credentials';
 
 describe('api: createToken', () => {
+  const tokeName = 'test_token';
   before((done) => {
     api.post(registerPath)
     .send(u.fakeUserCredentials)
@@ -35,9 +36,9 @@ describe('api: createToken', () => {
   it('no user found', (done) => {
     api.post(tokenPath)
     .send({
-      email: 'unknown@abc.com',
-      password: 'fakePasswd',
-      username: 'nouser'
+      tokenName: tokeName,
+      password: u.fakeUserCredentials.password,
+      username: 'nouser',
     })
     .expect(constants.httpStatus.UNAUTHORIZED)
     .expect(/LoginError/)
@@ -53,9 +54,9 @@ describe('api: createToken', () => {
   it('Wrong password', (done) => {
     api.post(tokenPath)
     .send({
-      email: 'user1@abc.com',
+      tokenName: tokeName,
       password: 'wrongPasswd',
-      username: 'user1'
+      username: u.fakeUserCredentials.username,
     })
     .expect(constants.httpStatus.UNAUTHORIZED)
     .expect(/LoginError/)
@@ -70,15 +71,20 @@ describe('api: createToken', () => {
 
   it('sucessful authentication, create token', (done) => {
     api.post(tokenPath)
-    .send(u.fakeUserCredentials)
-    .expect(constants.httpStatus.OK)
-    .expect((res) => expect(res.body.success).to.be.true)
-    .expect((res) => expect(res.body.message).to.be.equal('Enjoy your token!'))
-    .expect((res) => expect(res.body).to.have.property('token'))
-    .end((err) => {
+    .send({
+      tokenName: tokeName,
+      password: u.fakeUserCredentials.password,
+      username: u.fakeUserCredentials.username,
+    })
+    .expect(constants.httpStatus.CREATED)
+    .end((err, res) => {
       if (err) {
         return done(err);
       }
+
+      expect(res.body.name).to.be.equal(tokeName);
+      expect(res.body.isDisabled).to.be.equal('0');
+      expect(res.body.token).to.exist;
 
       done();
     });

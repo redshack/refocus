@@ -78,17 +78,8 @@ describe('db: Token: create', () => {
   it('One user can create multiple tokens, and' +
   'tokens are returned sorted by name in asc order', (done) => {
     // create tokens
-    const tokenA = jwtUtil.createToken({
-      name: 'tokenA',
-      username: userObj.name,
-      email: userObj.name,
-    });
-
-    const tokenB = jwtUtil.createToken({
-      name: 'tokenB',
-      username: userObj.name,
-      email: userObj.name,
-    });
+    const tokenA = jwtUtil.createToken(userObj);
+    const tokenB = jwtUtil.createToken(userObj);
 
     Token.create({
       name: 'tokenA',
