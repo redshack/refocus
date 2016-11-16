@@ -4495,7 +4495,7 @@ paths:
           $ref: "#/responses/genericError"
 
 # =============================================================================
-  /token:
+  /token/create_first:
     x-swagger-router-controller: token
     post:
       summary: Create an api access token
@@ -4503,7 +4503,7 @@ paths:
       description: >-
         Authenticate a user with email and password and create an api access
         token.
-      operationId: postToken
+      operationId: createFirstToken
       parameters:
         -
           name: queryBody
@@ -4512,27 +4512,33 @@ paths:
           schema:
             type: object
             description: >
-              Credentials of person who interacts with the Refocus system.
+              Token name and credentials of person who interacts with the 
+              Refocus system.
             properties:
-              email:
+              tokenName: 
+                type: string
+                description: >
+                  Token name.
+              username:
                 type: string
                 maxLength: 254
                 description: >
-                  The user's email address.
+                  The user's username.
               password:
                 type: string
                 format: password
                 description: >
                   The user's password.
             required:
-              - email
+              - tokenName
+              - username
               - password
       responses:
-        200:
+        201:
           description: >-
-            Success, returns a token.
+            Success, returns a token object.
           schema:
-            $ref: "#/definitions/TokenResponse"
+            $ref: "#/definitions/TokenCreateFirstResponse"
         400:
           $ref: "#/responses/400"
         403:
@@ -5520,25 +5526,66 @@ definitions:
         description: >
           Hypertext As The Engine Of Application State.
 
-  TokenResponse:
+  # TokenResponse:
+  #   type: object
+  #   description: >
+  #     API access token if authentication success.
+  #   properties:
+  #     Success:
+  #       type: boolean
+  #       readOnly: true
+  #     message:
+  #       type: string
+  #       readOnly: true
+  #       maxLength: 2082
+  #       description: >
+  #         API access message.
+  #     token:
+  #       type: string
+  #       readOnly: true
+  #       description: >
+  #         API token.
+  #     apiLinks:
+  #       readOnly: true
+  #       type: array
+  #       items:
+  #         $ref: "#/definitions/HATEOAS"
+  #       description: >
+  #         Hypertext As The Engine Of Application State.
+
+  TokenCreateFirstResponse:
     type: object
     description: >
       API access token if authentication success.
     properties:
-      Success:
-        type: boolean
-        readOnly: true
-      message:
+      id:
         type: string
         readOnly: true
-        maxLength: 2082
-        description: >
-          API access message.
+      isDisabled:
+        type: string
+        readOnly: true
+      name:
+        type: string
+        readOnly: true
+        description:
+          Name of token.
       token:
         type: string
         readOnly: true
         description: >
           API token.
+      createdBy:
+        readOnly: true
+        type: string
+        description: >
+          TODO
+      apiLinks:
+        readOnly: true
+        type: array
+        items:
+          $ref: "#/definitions/HATEOAS"
+        description: >
+          Hypertext As The Engine Of Application State.
 
   AuthenticationResponse:
     type: object

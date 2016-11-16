@@ -14,7 +14,9 @@ const configuredPassport = require('../../../index').passportModule;
 const httpStatus = require('../constants').httpStatus;
 const u = require('../helpers/verbs/utils');
 const apiErrors = require('../apiErrors');
-const jwtUtil = require('../helpers/jwtUtil');
+const jwtUtil = require('../../../utils/jwtUtil');
+const helper = require('../helpers/nouns/tokens');
+const logAPI = require('../../../utils/loggingUtil').logAPI;
 
 const resourceName = 'token';
 
@@ -28,7 +30,7 @@ module.exports = {
    * @param {Function} next - The next middleware function in the stack
    *
    */
-  postToken(req, res, next) {
+  createFirstToken(req, res, next) {
     configuredPassport.authenticate('local-login', (err, user/* , info */) => {
       if (err) {
         return u.handleError(next, err, resourceName);
@@ -43,12 +45,20 @@ module.exports = {
       }
 
       const createdToken = jwtUtil.createToken(user);
-
-      return res.status(httpStatus.OK).json({
-        success: true,
-        message: 'Enjoy your token!',
+      helper.model.create({
+        name: req.swagger.params.queryBody.value.tokenName,
         token: createdToken,
-      });
+        userId: user.id,
+      })
+      .then((o) => {
+        if (helper.loggingEnabled) {
+          logAPI(req, helper.modelName, o);
+        }
+
+        return res.status(httpStatus.CREATED)
+        .json(u.responsify(o, helper, req.method));
+      })
+      .catch((_err) => u.handleError(next, _err, helper.modelName));
     })(req, res, next);
   },
 

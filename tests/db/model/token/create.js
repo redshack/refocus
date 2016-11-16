@@ -20,7 +20,7 @@ const Profile = tu.db.Profile;
 const User = tu.db.User;
 const Token = tu.db.Token;
 const pfx = '___';
-const jwtUtil = require('../../../../api/v1/helpers/jwtUtil');
+const jwtUtil = require('../../../../utils/jwtUtil');
 
 describe('db: Token: create', () => {
   let userObj = {};
@@ -75,20 +75,11 @@ describe('db: Token: create', () => {
     .catch((err) => done(err));
   });
 
-  it('One user can create multiple tokens, and' +
+  it.only('One user can create multiple tokens, and' +
   'tokens are returned sorted by name in asc order', (done) => {
     // create tokens
-    const tokenA = jwtUtil.createToken({
-      name: 'tokenA',
-      username: userObj.name,
-      email: userObj.name,
-    });
-
-    const tokenB = jwtUtil.createToken({
-      name: 'tokenB',
-      username: userObj.name,
-      email: userObj.name,
-    });
+    const tokenA = jwtUtil.createToken(userObj);
+    const tokenB = jwtUtil.createToken(userObj);
 
     Token.create({
       name: 'tokenA',
