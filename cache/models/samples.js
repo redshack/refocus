@@ -27,7 +27,6 @@ const db = require('../../db/index');
 const fu = require('../../api/v1/helpers/verbs/findUtils.js');
 const aspectType = redisOps.aspectType;
 const sampleType = redisOps.sampleType;
-const subjectType = redisOps.subjectType;
 const featureToggles = require('feature-toggles');
 
 const sampFields = {
@@ -43,7 +42,6 @@ const sampFields = {
   UPD_AT: 'updatedAt',
   ASP_ID: 'aspectId',
   SUBJ_ID: 'subjectId',
-  IS_DELETED: 'isDeleted',
 };
 const sampleFieldsArr = Object.keys(sampFields).map(
   (field) => sampFields[field]
@@ -521,7 +519,6 @@ module.exports = {
 
       // attach aspect and links to sample
       const resSampAsp = cleanAddAspectToSample(sampObjToReturn, asp);
-      resSampAsp.isDeleted = Date.now();
       return resSampAsp;
     });
   },
